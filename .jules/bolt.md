@@ -1,0 +1,3 @@
+## 2024-10-02 - Avoid Pattern.compile in frequently called Forge event handlers
+**Learning:** In Minecraft Forge mods, event handlers for events like `RenderLivingEvent.Specials.Pre` (which run multiple times per frame) should avoid creating new objects or doing expensive computations. Compiling Regex with `Pattern.compile` on every invocation is a significant performance anti-pattern because it causes both excessive CPU usage and garbage collection pressure due to creating many temporary objects.
+**Action:** Always pre-compile regexes by declaring them as `private static final Pattern` constants instead of compiling them inline inside methods that are called frequently.
