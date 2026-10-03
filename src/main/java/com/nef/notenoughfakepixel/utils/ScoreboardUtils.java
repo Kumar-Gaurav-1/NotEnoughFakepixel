@@ -272,10 +272,15 @@ public class ScoreboardUtils {
     }
 
     public static String cleanSB(String scoreboard) {
-        return net.minecraft.util.StringUtils.stripControlCodes(scoreboard).chars()
-                .filter(c -> c > 20 && c < 127)
-                .mapToObj(c -> String.valueOf((char) c))
-                .collect(Collectors.joining());
+        String stripped = net.minecraft.util.StringUtils.stripControlCodes(scoreboard);
+        StringBuilder builder = new StringBuilder(stripped.length());
+        for (int i = 0; i < stripped.length(); i++) {
+            char c = stripped.charAt(i);
+            if (c > 20 && c < 127) {
+                builder.append(c);
+            }
+        }
+        return builder.toString();
     }
 
     @SuppressWarnings({"ExecutionException", "IllegalArgumentException"})
