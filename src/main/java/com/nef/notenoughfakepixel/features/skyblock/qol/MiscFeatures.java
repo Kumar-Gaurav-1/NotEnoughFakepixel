@@ -88,6 +88,9 @@ public class MiscFeatures {
     private static final long TELEPORT_GRACE_PERIOD_MS = 5000;
     private static final long SOUND_WINDOW_MS = 1000;
 
+    private static final Pattern DYING_MOB_PATTERN_1 = Pattern.compile("^§.\\[§.Lv\\d+§.\\] §.+ (?:§.)+0§f/.+§c❤$");
+    private static final Pattern DYING_MOB_PATTERN_2 = Pattern.compile("^.+ (?:§.)+0§c❤$");
+
     @SubscribeEvent
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (event.phase != TickEvent.Phase.END) return;
@@ -182,10 +185,7 @@ public class MiscFeatures {
             EntityLivingBase entity = event.entity;
             String name = entity.getDisplayName().getUnformattedText();
 
-            Pattern pattern1 = Pattern.compile("^§.\\[§.Lv\\d+§.\\] §.+ (?:§.)+0§f/.+§c❤$");
-            Pattern pattern2 = Pattern.compile("^.+ (?:§.)+0§c❤$");
-
-            if (pattern1.matcher(name).matches() || pattern2.matcher(name).matches()) {
+            if (DYING_MOB_PATTERN_1.matcher(name).matches() || DYING_MOB_PATTERN_2.matcher(name).matches()) {
                 event.setCanceled(true);
             }
         }
