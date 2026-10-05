@@ -34,6 +34,8 @@ import java.util.regex.Pattern;
 
 @RegisterEvents
 public class MiscFeatures {
+    private static final Pattern PATTERN_MOB_HP_1 = Pattern.compile("^§.\\[§.Lv\\d+§.\\] §.+ (?:§.)+0§f/.+§c❤$");
+    private static final Pattern PATTERN_MOB_HP_2 = Pattern.compile("^.+ (?:§.)+0§c❤$");
 
     ArrayList<Block> flowerPlaceable = new ArrayList<>(Arrays.asList(
             Blocks.grass,
@@ -182,10 +184,7 @@ public class MiscFeatures {
             EntityLivingBase entity = event.entity;
             String name = entity.getDisplayName().getUnformattedText();
 
-            Pattern pattern1 = Pattern.compile("^§.\\[§.Lv\\d+§.\\] §.+ (?:§.)+0§f/.+§c❤$");
-            Pattern pattern2 = Pattern.compile("^.+ (?:§.)+0§c❤$");
-
-            if (pattern1.matcher(name).matches() || pattern2.matcher(name).matches()) {
+            if (PATTERN_MOB_HP_1.matcher(name).matches() || PATTERN_MOB_HP_2.matcher(name).matches()) {
                 event.setCanceled(true);
             }
         }
