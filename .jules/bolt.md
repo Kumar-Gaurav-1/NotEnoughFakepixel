@@ -1,0 +1,3 @@
+## 2024-10-06 - StarredMobDisplay O(N^2) Bottleneck
+**Learning:** Found a severe performance issue where `world.loadedEntityList` was being iterated per rendered entity because the throttle check (`currentTime - lastUpdateTime > 20`) did not encapsulate the loop in a `RenderLivingEvent.Pre` handler, resulting in O(N^2) complexity where N is the entity count per frame.
+**Action:** Always ensure that when writing throttle mechanisms for expensive operations inside frame-based events (like `RenderWorldLastEvent` or `RenderLivingEvent`), the expensive operations (especially entity list iteration) are strictly confined *inside* the throttle block.
