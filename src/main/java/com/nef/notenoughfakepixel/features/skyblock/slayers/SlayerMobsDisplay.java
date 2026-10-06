@@ -42,32 +42,37 @@ public class SlayerMobsDisplay {
         Minecraft mc = Minecraft.getMinecraft();
         if (mc.thePlayer == null || mc.theWorld == null) return;
         if (Config.feature.slayer.bossSettings.slayerBossesOutline) return;
-        if (Config.feature.slayer.bossSettings.slayerBosses) onRender(event, true);
-        if (Config.feature.slayer.minibossSettings.slayerMinibosses) onRender(event, false);
+
+        boolean showBosses = Config.feature.slayer.bossSettings.slayerBosses;
+        boolean showMinibosses = Config.feature.slayer.minibossSettings.slayerMinibosses;
+
+        if (!showBosses && !showMinibosses) return;
+
+        onRenderCombined(event, showBosses, showMinibosses);
     }
 
-    private void onRender(RenderWorldLastEvent event, boolean isBoss) {
+    private void onRenderCombined(RenderWorldLastEvent event, boolean showBosses, boolean showMinibosses) {
         switch (SkyblockData.getCurrentLocation()) {
             case HUB:
             case PRIVATE_HUB:
-                showHitboxHub(event.partialTicks);
+                showHitboxHub(event.partialTicks, showBosses, showMinibosses);
                 break;
             case PARK:
-                showHitbox(MobDisplayTypes.WOLF, event.partialTicks, Constants.SVEN_SLAYER_MINIBOSSES, isBoss);
+                showHitbox(MobDisplayTypes.WOLF, event.partialTicks, Constants.SVEN_SLAYER_MINIBOSSES, showBosses, showMinibosses);
                 break;
             case SPIDERS_DEN:
-                showHitbox(MobDisplayTypes.SPIDER, event.partialTicks, Constants.TARANTULA_SLAYER_MINIBOSSES, isBoss);
+                showHitbox(MobDisplayTypes.SPIDER, event.partialTicks, Constants.TARANTULA_SLAYER_MINIBOSSES, showBosses, showMinibosses);
                 break;
             case THE_END:
-                showHitbox(MobDisplayTypes.ENDERMAN, event.partialTicks, Constants.VOIDGLOOM_SLAYER_MINIBOSSES, isBoss);
+                showHitbox(MobDisplayTypes.ENDERMAN, event.partialTicks, Constants.VOIDGLOOM_SLAYER_MINIBOSSES, showBosses, showMinibosses);
                 break;
             case CRIMSON_ISLE:
-                showHitbox(MobDisplayTypes.NONE, event.partialTicks, Constants.BLAZE_SLAYER_MINIBOSSES, isBoss);
+                showHitbox(MobDisplayTypes.NONE, event.partialTicks, Constants.BLAZE_SLAYER_MINIBOSSES, showBosses, showMinibosses);
                 break;
         }
     }
 
-    private void showHitboxHub(float partialTicks) {
+    private void showHitboxHub(float partialTicks, boolean showBosses, boolean showMinibosses) {
         Color bossColor = ColorUtils.getColor(Config.feature.slayer.bossSettings.slayerBossColor);
         Color minibossColor = ColorUtils.getColor(Config.feature.slayer.minibossSettings.slayerColor);
 
@@ -79,43 +84,58 @@ public class SlayerMobsDisplay {
             if (!(entity instanceof EntityArmorStand)) return;
 
             // Check for bosses
-            for (String name : Constants.SLAYER_BOSSES) {
-                if (entity.getName().contains(name)) {
-                    MobDisplayTypes type = entity.getName().contains("Sven Packmaster") ? MobDisplayTypes.WOLF : MobDisplayTypes.NONE;
-                    RenderUtils.renderEntityHitbox(entity, partialTicks, bossColor, type);
-                    return;
+            if (showBosses) {
+                for (String name : Constants.SLAYER_BOSSES) {
+                    if (entity.getName().contains(name)) {
+                        MobDisplayTypes type = entity.getName().contains("Sven Packmaster") ? MobDisplayTypes.WOLF : MobDisplayTypes.NONE;
+                        RenderUtils.renderEntityHitbox(entity, partialTicks, bossColor, type);
+                        return;
+                    }
                 }
             }
 
-            // Check for Sven minibosses
-            for (String name : Constants.SVEN_SLAYER_MINIBOSSES) {
-                if (entity.getName().contains(name)) {
-                    RenderUtils.renderEntityHitbox(entity, partialTicks, minibossColor, MobDisplayTypes.WOLF);
-                    return;
+            if (showMinibosses) {
+                // Check for Sven minibosses
+                for (String name : Constants.SVEN_SLAYER_MINIBOSSES) {
+                    if (entity.getName().contains(name)) {
+                        RenderUtils.renderEntityHitbox(entity, partialTicks, minibossColor, MobDisplayTypes.WOLF);
+                        return;
+                    }
                 }
-            }
 
-            // Check for Revenant minibosses
-            for (String name : Constants.REVENANT_SLAYER_MINIBOSSES) {
-                if (entity.getName().contains(name)) {
-                    RenderUtils.renderEntityHitbox(entity, partialTicks, minibossColor, MobDisplayTypes.NONE);
-                    return;
+                // Check for Revenant minibosses
+                for (String name : Constants.REVENANT_SLAYER_MINIBOSSES) {
+                    if (entity.getName().contains(name)) {
+                        RenderUtils.renderEntityHitbox(entity, partialTicks, minibossColor, MobDisplayTypes.NONE);
+                        return;
+                    }
                 }
             }
         });
     }
 
-    private void showHitbox(MobDisplayTypes type, float partialTicks, String[] namesList, boolean isBoss) {
+    private void showHitbox(MobDisplayTypes type, float partialTicks, String[] namesList, boolean showBosses, boolean showMinibosses) {
         Color color = ColorUtils.getColor(Config.feature.slayer.bossSettings.slayerBossColor);
         WorldClient world = Minecraft.getMinecraft().theWorld;
         world.loadedEntityList.forEach(entity -> {
             if (entity == null || entity.getName() == null) return;
             if (!(entity instanceof EntityArmorStand)) return;
 
-            String[] names = isBoss ? Constants.SLAYER_BOSSES : namesList;
-            for (String name : names) {
-                if (entity.getName().contains(name)) {
-                    RenderUtils.renderEntityHitbox(entity, partialTicks, color, type);
+            if (showBosses) {
+                for (String name : Constants.SLAYER_BOSSES) {
+                    if (entity.getName().contains(name)) {
+                        RenderUtils.renderEntityHitbox(entity, partialTicks, color, type);
+                        return;
+                    }
+                }
+            }
+
+            if (showMinibosses) {
+                for (String name : namesList) {
+                    if (entity.getName().contains(name)) {
+                        RenderUtils.renderEntityHitbox(entity, partialTicks, color, type);
+                        return;
+                    }
                 }
             }
         });

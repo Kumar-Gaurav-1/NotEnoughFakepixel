@@ -75,15 +75,15 @@ public class StarredMobDisplay {
         if (currentTime - lastUpdateTime > 20) {
             clearCache();
             lastUpdateTime = currentTime;
-        }
-        WorldClient world = Minecraft.getMinecraft().theWorld;
-        for (Entity entity : world.loadedEntityList) {
-            if (entity instanceof EntityArmorStand) {
-                EntityArmorStand armorStand = (EntityArmorStand) entity;
-                if (armorStand.getName().contains("✮")) {
-                    EntityLivingBase mob = findAssociatedMob(armorStand);
-                    if (mob != null && !isDying(mob)) {
-                        currentEntities.add(mob);
+            WorldClient world = Minecraft.getMinecraft().theWorld;
+            for (Entity entity : world.loadedEntityList) {
+                if (entity instanceof EntityArmorStand) {
+                    EntityArmorStand armorStand = (EntityArmorStand) entity;
+                    if (armorStand.getName().contains("✮")) {
+                        EntityLivingBase mob = findAssociatedMob(armorStand);
+                        if (mob != null && !isDying(mob)) {
+                            currentEntities.add(mob);
+                        }
                     }
                 }
             }
