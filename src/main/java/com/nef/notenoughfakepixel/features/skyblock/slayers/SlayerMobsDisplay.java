@@ -128,6 +128,7 @@ public class SlayerMobsDisplay {
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastUpdateTime > 20) {
             slayerEntity.clear();
+            slayerMiniEntity.clear();
             lastUpdateTime = currentTime;
         }
 
@@ -145,25 +146,29 @@ public class SlayerMobsDisplay {
             if (!(armorStand instanceof EntityArmorStand) || armorStand.getName() == null) continue;
 
             // Check for bosses
-            for (String name : Constants.SLAYER_BOSSES) {
-                if (armorStand.getName().contains(name) && Config.feature.slayer.bossSettings.slayerBosses) {
-                    slayerEntity.add(entity);
-                    return;
+            if (Config.feature.slayer.bossSettings.slayerBosses) {
+                for (String name : Constants.SLAYER_BOSSES) {
+                    if (armorStand.getName().contains(name)) {
+                        slayerEntity.add(entity);
+                        return;
+                    }
                 }
             }
 
             // Check for all minibosses
-            for (String[] minibosses : new String[][]{
-                    Constants.SVEN_SLAYER_MINIBOSSES,
-                    Constants.REVENANT_SLAYER_MINIBOSSES,
-                    Constants.TARANTULA_SLAYER_MINIBOSSES,
-                    Constants.VOIDGLOOM_SLAYER_MINIBOSSES,
-                    Constants.BLAZE_SLAYER_MINIBOSSES
-            }) {
-                for (String name : minibosses) {
-                    if (armorStand.getName().contains(name) && Config.feature.slayer.minibossSettings.slayerMinibosses) {
-                        slayerMiniEntity.add(entity);
-                        return;
+            if (Config.feature.slayer.minibossSettings.slayerMinibosses) {
+                for (String[] minibosses : new String[][]{
+                        Constants.SVEN_SLAYER_MINIBOSSES,
+                        Constants.REVENANT_SLAYER_MINIBOSSES,
+                        Constants.TARANTULA_SLAYER_MINIBOSSES,
+                        Constants.VOIDGLOOM_SLAYER_MINIBOSSES,
+                        Constants.BLAZE_SLAYER_MINIBOSSES
+                }) {
+                    for (String name : minibosses) {
+                        if (armorStand.getName().contains(name)) {
+                            slayerMiniEntity.add(entity);
+                            return;
+                        }
                     }
                 }
             }
@@ -175,25 +180,17 @@ public class SlayerMobsDisplay {
         if (!Config.feature.slayer.bossSettings.slayerBossesOutline) return;
 
         EntityLivingBase entity = event.getEntity();
-        if (entity == null || !slayerEntity.contains(entity)) return;
+        if (entity == null) return;
+
+        boolean isBoss = slayerEntity.contains(entity);
+        boolean isMiniboss = slayerMiniEntity.contains(entity);
+
+        if (!isBoss && !isMiniboss) return;
 
         Color bossColor = ColorUtils.getColor(Config.feature.slayer.bossSettings.slayerBossColor);
         Color minibossColor = ColorUtils.getColor(Config.feature.slayer.minibossSettings.slayerColor);
-        Color color = minibossColor;
 
-        List<Entity> armorStands = Minecraft.getMinecraft().theWorld.getEntitiesWithinAABB(
-                EntityArmorStand.class,
-                entity.getEntityBoundingBox().offset(0, 2.0, 0).expand(1.0, 1.0, 1.0)
-        );
-        for (Entity armorStand : armorStands) {
-            if (!(armorStand instanceof EntityArmorStand) || armorStand.getName() == null) continue;
-            for (String name : Constants.SLAYER_BOSSES) {
-                if (armorStand.getName().contains(name) && Config.feature.slayer.bossSettings.slayerBosses) {
-                    color = bossColor;
-                    break;
-                }
-            }
-        }
+        Color color = isBoss ? bossColor : minibossColor;
 
         EntityHighlightUtils.renderEntityOutline(event, color);
     }
