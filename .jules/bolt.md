@@ -1,0 +1,3 @@
+## 2025-05-19 - Performance issue with `getEntitiesWithinAABB` in Render Entity Event
+**Learning:** In `SlayerMobsDisplay.java` and `BlazeAttunements.java`, `getEntitiesWithinAABB` is called every frame for every rendered living entity in `onRenderEntity` or `onRenderEntityModel`! This iterates over chunks and entities many times a frame, creating significant CPU overhead and possible frame drops.
+**Action:** The logic for correlating armor stands to base entities can be optimized. Instead of checking a bounding box per rendered entity per frame, we could cache this relationship or just process the armor stands once and find the nearest living entity instead of querying the world AABB for each living entity.
