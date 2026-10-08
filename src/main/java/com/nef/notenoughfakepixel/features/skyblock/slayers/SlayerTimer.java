@@ -23,14 +23,15 @@ public class SlayerTimer {
     public void onClientTick(TickEvent.ClientTickEvent event) {
         if (Config.feature.slayer.bossSettings.slayerBossTimer && SkyblockData.getCurrentGamemode().isSkyblock()) {
             if (event.side == net.minecraftforge.fml.relauncher.Side.CLIENT) {
+                // Optimization: Skip fetching and parsing scoreboard lines if the boss is already active
+                if (isBossActive) return;
+
                 List<String> sidebarLines = ScoreboardUtils.getScoreboardLines();
 
                 for (String line : sidebarLines) {
                     if (line.contains("Slay the boss!")) {
-                        if (!isBossActive) {
-                            startTime = System.currentTimeMillis();
-                            isBossActive = true;
-                        }
+                        startTime = System.currentTimeMillis();
+                        isBossActive = true;
                         break;
                     }
                 }

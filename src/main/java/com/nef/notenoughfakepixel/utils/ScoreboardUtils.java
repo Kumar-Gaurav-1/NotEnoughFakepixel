@@ -289,27 +289,32 @@ public class ScoreboardUtils {
         ScoreObjective objective = scoreboard.getObjectiveInDisplaySlot(1);
         if (objective == null) return Collections.emptyList();
 
-        List<Score> filteredScores;
+        List<Score> filteredScores = new ArrayList<>();
         try {
-            filteredScores = scoreboard.getSortedScores(objective).stream()
-                    .filter(score -> score != null
-                            && score.getPlayerName() != null
-                            && !score.getPlayerName().startsWith("#"))
-                    .collect(Collectors.toList());
+            Collection<Score> scores = scoreboard.getSortedScores(objective);
+            // Optimization: Replaced Java Streams with traditional loops to avoid allocating
+            // multiple temporary objects (lambdas, stream wrappers) per tick, reducing GC pressure.
+            for (Score score : scores) {
+                if (score != null && score.getPlayerName() != null && !score.getPlayerName().startsWith("#")) {
+                    filteredScores.add(score);
+                }
+            }
         } catch (ConcurrentModificationException ex) {
             ex.printStackTrace();
             return Collections.emptyList();
         }
 
         int size = filteredScores.size();
-        return IntStream.range(Math.max(0, size - 15), size)
-                .mapToObj(i -> {
-                    Score score = filteredScores.get(i);
-                    String playerName = score.getPlayerName();
-                    ScorePlayerTeam team = scoreboard.getPlayersTeam(playerName);
-                    return ScorePlayerTeam.formatPlayerName(team, playerName);
-                })
-                .collect(Collectors.toList());
+        int start = Math.max(0, size - 15);
+        List<String> result = new ArrayList<>(size - start);
+        for (int i = start; i < size; i++) {
+            Score score = filteredScores.get(i);
+            String playerName = score.getPlayerName();
+            ScorePlayerTeam team = scoreboard.getPlayersTeam(playerName);
+            result.add(ScorePlayerTeam.formatPlayerName(team, playerName));
+        }
+
+        return result;
     }
 
 
