@@ -47,6 +47,10 @@ public class MiscFeatures {
 
     private final Minecraft mc = Minecraft.getMinecraft();
 
+    // ⚡ Bolt: Cache regex patterns to prevent recompilation in render loops
+    private static final Pattern DYING_MOB_PATTERN_1 = Pattern.compile("^§.\\[§.Lv\\d+§.\\] §.+ (?:§.)+0§f/.+§c❤$");
+    private static final Pattern DYING_MOB_PATTERN_2 = Pattern.compile("^.+ (?:§.)+0§c❤$");
+
     @SubscribeEvent
     public void onInteract(PlayerInteractEvent event) {
         if (!SkyblockData.getCurrentGamemode().isSkyblock() || mc.thePlayer != event.entityPlayer) return;
@@ -182,10 +186,7 @@ public class MiscFeatures {
             EntityLivingBase entity = event.entity;
             String name = entity.getDisplayName().getUnformattedText();
 
-            Pattern pattern1 = Pattern.compile("^§.\\[§.Lv\\d+§.\\] §.+ (?:§.)+0§f/.+§c❤$");
-            Pattern pattern2 = Pattern.compile("^.+ (?:§.)+0§c❤$");
-
-            if (pattern1.matcher(name).matches() || pattern2.matcher(name).matches()) {
+            if (DYING_MOB_PATTERN_1.matcher(name).matches() || DYING_MOB_PATTERN_2.matcher(name).matches()) {
                 event.setCanceled(true);
             }
         }
