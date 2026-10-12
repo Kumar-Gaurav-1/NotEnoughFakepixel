@@ -175,6 +175,9 @@ public class MiscFeatures {
         }
     }
 
+    private static final Pattern DYING_MOB_PATTERN_1 = Pattern.compile("^§.\\[§.Lv\\d+§.\\] §.+ (?:§.)+0§f/.+§c❤$");
+    private static final Pattern DYING_MOB_PATTERN_2 = Pattern.compile("^.+ (?:§.)+0§c❤$");
+
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public void onRenderLivingSpecialsPre(RenderLivingEvent.Specials.Pre<EntityLivingBase> event) {
         if (!SkyblockData.getCurrentGamemode().isSkyblock()) return;
@@ -182,10 +185,7 @@ public class MiscFeatures {
             EntityLivingBase entity = event.entity;
             String name = entity.getDisplayName().getUnformattedText();
 
-            Pattern pattern1 = Pattern.compile("^§.\\[§.Lv\\d+§.\\] §.+ (?:§.)+0§f/.+§c❤$");
-            Pattern pattern2 = Pattern.compile("^.+ (?:§.)+0§c❤$");
-
-            if (pattern1.matcher(name).matches() || pattern2.matcher(name).matches()) {
+            if (DYING_MOB_PATTERN_1.matcher(name).matches() || DYING_MOB_PATTERN_2.matcher(name).matches()) {
                 event.setCanceled(true);
             }
         }
