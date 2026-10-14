@@ -1,0 +1,3 @@
+## 2024-05-18 - Avoid loading the whole entity list unnecessarily
+**Learning:** `mc.theWorld.getLoadedEntityList()` or `world.loadedEntityList` create an iteration over all loaded entities, and when done in tick events or render events it can cause performance degradation, especially when creating streams or lists out of them unnecessarily. In `RenderLivingEvent` or `RenderEntityModelEvent`, you typically already have the specific `entity` via `event.getEntity()` and shouldn't iterate all loaded entities again.
+**Action:** When implementing rendering overlays or logic, check if `event.getEntity()` or bounded searches like `getEntitiesWithinAABB` can be used instead of calling `getLoadedEntityList()`.
