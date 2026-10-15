@@ -17,10 +17,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.util.IChatComponent;
-import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.awt.*;
 import java.util.HashSet;
@@ -33,8 +33,6 @@ public class StarredMobDisplay {
     private static final Pattern PATTERN1 = Pattern.compile("^§.\\[§.Lv\\d+§.\\] §.+ (?:§.)+0§f/.+§c❤$");
     private static final Pattern PATTERN2 = Pattern.compile("^.+ (?:§.)+0§c❤$");
     private static final Pattern PATTERN_RUNIC = Pattern.compile("^§.\\[§.Runic§.\\] §.+ (?:§.)+0§f/.+§c❤$");
-
-    private long lastUpdateTime = 0;
 
     @Getter
     private final Set<EntityLivingBase> currentEntities = new HashSet<>();
@@ -69,14 +67,17 @@ public class StarredMobDisplay {
     }
 
 
+    /**
+     * Optimized: Use ClientTickEvent instead of RenderLivingEvent.
+     * Querying loadedEntityList inside a render event causes an O(N*M) performance issue.
+     */
     @SubscribeEvent
-    public void onRenderLiving(RenderLivingEvent.Pre<EntityLivingBase> event) {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastUpdateTime > 20) {
-            clearCache();
-            lastUpdateTime = currentTime;
-        }
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
         WorldClient world = Minecraft.getMinecraft().theWorld;
+        if (world == null) return;
+
+        clearCache();
         for (Entity entity : world.loadedEntityList) {
             if (entity instanceof EntityArmorStand) {
                 EntityArmorStand armorStand = (EntityArmorStand) entity;
