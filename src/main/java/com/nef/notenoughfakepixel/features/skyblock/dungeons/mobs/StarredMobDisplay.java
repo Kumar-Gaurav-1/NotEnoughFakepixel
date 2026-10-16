@@ -21,6 +21,7 @@ import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.awt.*;
 import java.util.HashSet;
@@ -70,14 +71,17 @@ public class StarredMobDisplay {
 
 
     @SubscribeEvent
-    public void onRenderLiving(RenderLivingEvent.Pre<EntityLivingBase> event) {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastUpdateTime > 20) {
-            clearCache();
-            lastUpdateTime = currentTime;
-        }
-        WorldClient world = Minecraft.getMinecraft().theWorld;
-        for (Entity entity : world.loadedEntityList) {
+    public void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.theWorld == null) return;
+
+        // Optimization: Moved from RenderLivingEvent to ClientTickEvent.
+        // Scanning loadedEntityList per-frame inside RenderLivingEvent caused severe O(N*M) lag.
+        // Running it once per tick (every 50ms) preserves responsiveness while massively improving FPS.
+        clearCache();
+
+        for (Entity entity : mc.theWorld.loadedEntityList) {
             if (entity instanceof EntityArmorStand) {
                 EntityArmorStand armorStand = (EntityArmorStand) entity;
                 if (armorStand.getName().contains("✮")) {
