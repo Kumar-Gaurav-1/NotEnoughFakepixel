@@ -1,0 +1,112 @@
+<<<<<<< SEARCH
+    private void renderEntities(float partialTicks) {
+        final Color[] newColor = {new Color(255, 0, 0, 100)};
+        WorldClient world = Minecraft.getMinecraft().theWorld;
+        AtomicInteger blazingSoulCounter = new AtomicInteger();
+        AtomicInteger ashfangFollowerCounter = new AtomicInteger();
+        boolean gravityFound = false;
+        for (int i = 0; i < world.loadedEntityList.size(); i++) {
+            Entity entity = world.loadedEntityList.get(i);
+            if (entity == null) continue;
+            if (entity.getName() == null) continue;
+            int[] position = new int[]{entity.getPosition().getX(), entity.getPosition().getY(), entity.getPosition().getZ()};
+
+            String entityName = entity.getName();
+=======
+    private final java.util.List<Entity> cachedEntitiesToRender = new java.util.ArrayList<>();
+
+    @SubscribeEvent
+    public void onTick(net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent event) {
+        if (event.phase != net.minecraftforge.fml.common.gameevent.TickEvent.Phase.START) return;
+        if (Crimson.checkEssentials()) return;
+        int[] playerPos = new int[]{Minecraft.getMinecraft().thePlayer.getPosition().getX(), Minecraft.getMinecraft().thePlayer.getPosition().getY(), Minecraft.getMinecraft().thePlayer.getPosition().getZ()};
+        if (!Crimson.checkAshfangArea(playerPos)) return;
+
+        WorldClient world = Minecraft.getMinecraft().theWorld;
+        if (world == null) return;
+
+        cachedEntitiesToRender.clear();
+        AtomicInteger blazingSoulCounter = new AtomicInteger();
+        AtomicInteger ashfangFollowerCounter = new AtomicInteger();
+        boolean gravityFound = false;
+
+        for (int i = 0; i < world.loadedEntityList.size(); i++) {
+            Entity entity = world.loadedEntityList.get(i);
+            if (entity == null || entity.getName() == null) continue;
+            int[] position = new int[]{entity.getPosition().getX(), entity.getPosition().getY(), entity.getPosition().getZ()};
+
+            String entityName = entity.getName();
+            // GRAVITY ORB
+            if (entity instanceof EntityArmorStand) {
+                if (!Crimson.checkAshfangArea(position)) continue;
+                ItemStack it = ((EntityArmorStand) entity).getEquipmentInSlot(4);
+                String blazingSoul = "Blazing Soul";
+                if (it != null && it.getItem() == Items.skull) {
+                    if (!Config.feature.crimson.ashfangSettings.crimsonGravityOrbWaypoint) continue;
+
+                    String texture = ItemUtils.getSkullTexture(it);
+                    if (texture == null || texture.isEmpty()) continue;
+                    if (Skins.equalsSkin(texture, Skins.GRAVITY_ORB)) {
+                        waypointGravityOrb = new Waypoint("GRAVITYORB", position);
+                        gravityFound = true;
+                        if (currentGravityOrb == null) {
+                            SoundUtils.playSound(position, "random.pop", 5.0f, 1.5f);
+                        } else if (entity.getUniqueID() != currentGravityOrb.getUniqueID()) {
+                            SoundUtils.playSound(position, "random.pop", 5.0f, 1.5f);
+                        }
+                        currentGravityOrb = entity;
+                    }
+
+                } else if (entityName.contains("Ashfang") && !isNameAshfangMinion(entityName) &&
+                        (currentAshfang == null || currentAshfang.getUniqueID() != entity.getUniqueID())) {
+                    if (!Config.feature.crimson.ashfangSettings.crimsonAshfangWaypoint) continue;
+                    if (!Crimson.checkAshfangArea(position)) continue;
+                    waypointAshfang = new Waypoint(ashfangName, position);
+
+                    currentAshfang = entity;
+                } else if (isNameAshfangMinion(entityName)) {
+                    if (!Config.feature.crimson.ashfangSettings.crimsonAshfangHitboxes) continue;
+                    if (entityName.contains(follower)) {
+                        ashfangFollowerCounter.getAndIncrement();
+                    }
+                    cachedEntitiesToRender.add(entity);
+                } else if (entityName.contains(blazingSoul)) {
+                    if (!Config.feature.crimson.ashfangSettings.crimsonAshfangHitboxes) continue;
+                    blazingSoulCounter.getAndIncrement();
+                    cachedEntitiesToRender.add(entity);
+                }
+            }
+        }
+        blazingSoulsCounter = blazingSoulCounter.get();
+        if (!gravityFound) waypointGravityOrb = null;
+    }
+
+    private void renderEntities(float partialTicks) {
+        final Color[] newColor = {new Color(255, 0, 0, 100)};
+        for (Entity entity : cachedEntitiesToRender) {
+            String entityName = entity.getName();
+            if (isNameAshfangMinion(entityName)) {
+                if (entityName.contains(underling)) {
+                    newColor[0] = new Color(255, 0, 0, 150);
+                } else if (entityName.contains(acolyte)) {
+                    newColor[0] = new Color(0, 0, 255, 150);
+                } else if (entityName.contains(follower)) {
+                    newColor[0] = new Color(255, 255, 255, 255);
+                }
+                RenderUtils.renderEntityHitbox(
+                        entity,
+                        partialTicks,
+                        newColor[0],
+                        MobDisplayTypes.BLAZE
+                );
+            } else if (entityName.contains("Blazing Soul")) {
+                newColor[0] = new Color(255, 255, 0, 255);
+                RenderUtils.renderEntityHitbox(
+                        entity,
+                        partialTicks,
+                        newColor[0],
+                        MobDisplayTypes.BLAZINGSOUL
+                );
+            }
+        }
+>>>>>>> REPLACE

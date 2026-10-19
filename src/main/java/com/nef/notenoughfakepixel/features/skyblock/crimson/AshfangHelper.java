@@ -21,9 +21,12 @@ import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,6 +49,7 @@ public class AshfangHelper {
 
     private static Entity currentAshfang;
     private static Entity currentGravityOrb;
+    private final List<Entity> cachedEntitiesToRender = new ArrayList<>();
 
     private Waypoint waypointAshfang;
     private Waypoint waypointGravityOrb;
@@ -104,16 +108,32 @@ public class AshfangHelper {
         }
     }
 
-    private void renderEntities(float partialTicks) {
-        final Color[] newColor = {new Color(255, 0, 0, 100)};
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        if (Crimson.checkEssentials()) {
+            cachedEntitiesToRender.clear();
+            blazingSoulsCounter = 0;
+            waypointGravityOrb = null;
+            return;
+        }
+
         WorldClient world = Minecraft.getMinecraft().theWorld;
+        if (world == null) {
+            cachedEntitiesToRender.clear();
+            blazingSoulsCounter = 0;
+            waypointGravityOrb = null;
+            return;
+        }
+
+        cachedEntitiesToRender.clear();
         AtomicInteger blazingSoulCounter = new AtomicInteger();
         AtomicInteger ashfangFollowerCounter = new AtomicInteger();
         boolean gravityFound = false;
+
         for (int i = 0; i < world.loadedEntityList.size(); i++) {
             Entity entity = world.loadedEntityList.get(i);
-            if (entity == null) continue;
-            if (entity.getName() == null) continue;
+            if (entity == null || entity.getName() == null) continue;
             int[] position = new int[]{entity.getPosition().getX(), entity.getPosition().getY(), entity.getPosition().getZ()};
 
             String entityName = entity.getName();
@@ -146,38 +166,50 @@ public class AshfangHelper {
 
                     currentAshfang = entity;
                 } else if (isNameAshfangMinion(entityName)) {
-
                     if (!Config.feature.crimson.ashfangSettings.crimsonAshfangHitboxes) continue;
-                    if (entityName.contains(underling)) {
-                        newColor[0] = new Color(255, 0, 0, 150);
-                    } else if (entityName.contains(acolyte)) {
-                        newColor[0] = new Color(0, 0, 255, 150);
-                    } else if (entityName.contains(follower)) {
+                    if (entityName.contains(follower)) {
                         ashfangFollowerCounter.getAndIncrement();
-                        newColor[0] = new Color(255, 255, 255, 255);
                     }
-                    RenderUtils.renderEntityHitbox(
-                            entity,
-                            partialTicks,
-                            newColor[0],
-                            MobDisplayTypes.BLAZE
-                    );
-
+                    cachedEntitiesToRender.add(entity);
                 } else if (entityName.contains(blazingSoul)) {
                     if (!Config.feature.crimson.ashfangSettings.crimsonAshfangHitboxes) continue;
                     blazingSoulCounter.getAndIncrement();
-                    newColor[0] = new Color(255, 255, 0, 255);
-                    RenderUtils.renderEntityHitbox(
-                            entity,
-                            partialTicks,
-                            newColor[0],
-                            MobDisplayTypes.BLAZINGSOUL
-                    );
+                    cachedEntitiesToRender.add(entity);
                 }
             }
         }
         blazingSoulsCounter = blazingSoulCounter.get();
         if (!gravityFound) waypointGravityOrb = null;
+    }
+
+    private void renderEntities(float partialTicks) {
+        final Color[] newColor = {new Color(255, 0, 0, 100)};
+        for (Entity entity : cachedEntitiesToRender) {
+            String entityName = entity.getName();
+            if (isNameAshfangMinion(entityName)) {
+                if (entityName.contains(underling)) {
+                    newColor[0] = new Color(255, 0, 0, 150);
+                } else if (entityName.contains(acolyte)) {
+                    newColor[0] = new Color(0, 0, 255, 150);
+                } else if (entityName.contains(follower)) {
+                    newColor[0] = new Color(255, 255, 255, 255);
+                }
+                RenderUtils.renderEntityHitbox(
+                        entity,
+                        partialTicks,
+                        newColor[0],
+                        MobDisplayTypes.BLAZE
+                );
+            } else if (entityName.contains("Blazing Soul")) {
+                newColor[0] = new Color(255, 255, 0, 255);
+                RenderUtils.renderEntityHitbox(
+                        entity,
+                        partialTicks,
+                        newColor[0],
+                        MobDisplayTypes.BLAZINGSOUL
+                );
+            }
+        }
     }
 
     private boolean isNameAshfangMinion(String name) {

@@ -1,0 +1,45 @@
+<<<<<<< SEARCH
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        if (Crimson.checkEssentials()) return;
+        if (Minecraft.getMinecraft().thePlayer == null) return;
+
+        int[] playerPos = new int[]{Minecraft.getMinecraft().thePlayer.getPosition().getX(), Minecraft.getMinecraft().thePlayer.getPosition().getY(), Minecraft.getMinecraft().thePlayer.getPosition().getZ()};
+        if (!Crimson.checkAshfangArea(playerPos)) return;
+
+        WorldClient world = Minecraft.getMinecraft().theWorld;
+        if (world == null) return;
+
+        cachedEntitiesToRender.clear();
+        AtomicInteger blazingSoulCounter = new AtomicInteger();
+        AtomicInteger ashfangFollowerCounter = new AtomicInteger();
+        boolean gravityFound = false;
+
+        for (int i = 0; i < world.loadedEntityList.size(); i++) {
+=======
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        if (Crimson.checkEssentials()) {
+            cachedEntitiesToRender.clear();
+            blazingSoulsCounter = 0;
+            waypointGravityOrb = null;
+            return;
+        }
+
+        WorldClient world = Minecraft.getMinecraft().theWorld;
+        if (world == null) {
+            cachedEntitiesToRender.clear();
+            blazingSoulsCounter = 0;
+            waypointGravityOrb = null;
+            return;
+        }
+
+        cachedEntitiesToRender.clear();
+        AtomicInteger blazingSoulCounter = new AtomicInteger();
+        AtomicInteger ashfangFollowerCounter = new AtomicInteger();
+        boolean gravityFound = false;
+
+        for (int i = 0; i < world.loadedEntityList.size(); i++) {
+>>>>>>> REPLACE
