@@ -6,10 +6,9 @@ import com.nef.notenoughfakepixel.serverdata.SkyblockData;
 import com.nef.notenoughfakepixel.utils.SoundUtils;
 import com.nef.notenoughfakepixel.utils.TitleUtils;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
-import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 @RegisterEvents
 public class FirePillarDisplay {
@@ -20,7 +19,8 @@ public class FirePillarDisplay {
     private static final long endTime = 0;
 
     @SubscribeEvent
-    public void onRenderLiving(RenderLivingEvent.Pre<EntityLivingBase> event) {
+    public void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
         if (!Config.feature.slayer.infernoDemonlord.slayerFirePillarDisplay || mc.theWorld == null) return;
         if (!SkyblockData.getCurrentGamemode().isSkyblock()) return;
         if (!SkyblockData.getCurrentLocation().isCrimson()) return;
