@@ -8,8 +8,8 @@ import com.nef.notenoughfakepixel.utils.TitleUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
-import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 @RegisterEvents
 public class FirePillarDisplay {
@@ -20,11 +20,14 @@ public class FirePillarDisplay {
     private static final long endTime = 0;
 
     @SubscribeEvent
-    public void onRenderLiving(RenderLivingEvent.Pre<EntityLivingBase> event) {
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+
         if (!Config.feature.slayer.infernoDemonlord.slayerFirePillarDisplay || mc.theWorld == null) return;
         if (!SkyblockData.getCurrentGamemode().isSkyblock()) return;
         if (!SkyblockData.getCurrentLocation().isCrimson()) return;
 
+        // Optimization: Run bounded logic instead of scanning world on every render event
         if (mc.theWorld.getTotalWorldTime() % 5 != 0) return;
 
         mc.theWorld.getLoadedEntityList().stream()
