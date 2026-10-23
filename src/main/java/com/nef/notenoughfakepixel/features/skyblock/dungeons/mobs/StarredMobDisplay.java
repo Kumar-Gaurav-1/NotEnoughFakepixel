@@ -17,10 +17,10 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.util.IChatComponent;
-import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.awt.*;
 import java.util.HashSet;
@@ -70,13 +70,13 @@ public class StarredMobDisplay {
 
 
     @SubscribeEvent
-    public void onRenderLiving(RenderLivingEvent.Pre<EntityLivingBase> event) {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastUpdateTime > 20) {
-            clearCache();
-            lastUpdateTime = currentTime;
-        }
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
         WorldClient world = Minecraft.getMinecraft().theWorld;
+        if (world == null) return;
+
+        clearCache();
+
         for (Entity entity : world.loadedEntityList) {
             if (entity instanceof EntityArmorStand) {
                 EntityArmorStand armorStand = (EntityArmorStand) entity;
