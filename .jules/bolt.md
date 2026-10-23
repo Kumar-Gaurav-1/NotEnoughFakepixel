@@ -1,0 +1,3 @@
+## 2024-05-13 - [Optimize Entity Loop in Render Events]
+**Learning:** In this codebase, avoid iterating over `mc.theWorld.getLoadedEntityList()` or `world.loadedEntityList` within render events (like `RenderLivingEvent` or `RenderEntityModelEvent`) as it causes severe O(N*M) performance bottlenecks. Use `TickEvent.ClientTickEvent` (checking for `event.phase == TickEvent.Phase.START` to run once per tick) or bounded queries (like `getEntitiesWithinAABB`) instead.
+**Action:** When caching entities in `TickEvent.ClientTickEvent` to optimize render loops, always ensure the cache is explicitly cleared (`list.clear()`) before any early return statements (such as state or area checks). Bypassing the clear operation causes memory leaks and ghost entity rendering.
