@@ -21,6 +21,7 @@ import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.awt.*;
 import java.util.HashSet;
@@ -70,20 +71,26 @@ public class StarredMobDisplay {
 
 
     @SubscribeEvent
-    public void onRenderLiving(RenderLivingEvent.Pre<EntityLivingBase> event) {
+    public void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
         long currentTime = System.currentTimeMillis();
         if (currentTime - lastUpdateTime > 20) {
             clearCache();
             lastUpdateTime = currentTime;
-        }
-        WorldClient world = Minecraft.getMinecraft().theWorld;
-        for (Entity entity : world.loadedEntityList) {
-            if (entity instanceof EntityArmorStand) {
-                EntityArmorStand armorStand = (EntityArmorStand) entity;
-                if (armorStand.getName().contains("✮")) {
-                    EntityLivingBase mob = findAssociatedMob(armorStand);
-                    if (mob != null && !isDying(mob)) {
-                        currentEntities.add(mob);
+
+            // O(N*M) Performance Fix: Moving loadedEntityList iteration from
+            // RenderLivingEvent (which fires per entity per frame) to ClientTickEvent.
+            // This prevents thousands of loops per second and properly clears cache before returning.
+            WorldClient world = Minecraft.getMinecraft().theWorld;
+            if (world == null) return;
+            for (Entity entity : world.loadedEntityList) {
+                if (entity instanceof EntityArmorStand) {
+                    EntityArmorStand armorStand = (EntityArmorStand) entity;
+                    if (armorStand.getName().contains("✮")) {
+                        EntityLivingBase mob = findAssociatedMob(armorStand);
+                        if (mob != null && !isDying(mob)) {
+                            currentEntities.add(mob);
+                        }
                     }
                 }
             }
