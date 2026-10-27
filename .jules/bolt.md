@@ -1,0 +1,3 @@
+## 2024-05-24 - [O(N*M) Rendering Bottleneck in RenderEvents]
+ **Learning:** In this codebase, avoiding iterating over `mc.theWorld.getLoadedEntityList()` or `world.loadedEntityList` within render events (like `RenderLivingEvent` or `RenderEntityModelEvent`) is crucial. These events fire per-entity per-frame, causing severe O(N*M) performance bottlenecks where N is the number of rendered entities and M is the total loaded entities.
+ **Action:** Move entity list iterations to `TickEvent.ClientTickEvent` (checking for `event.phase == TickEvent.Phase.START` to run once per tick). When caching entities this way for render loops, always ensure the cache is explicitly cleared (`list.clear()`) before any early returns to prevent memory leaks and ghost entities.
