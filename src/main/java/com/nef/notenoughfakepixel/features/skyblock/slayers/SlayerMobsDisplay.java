@@ -22,6 +22,7 @@ import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 
 import java.awt.*;
 import java.util.HashSet;
@@ -35,7 +36,25 @@ public class SlayerMobsDisplay {
     public final Set<EntityLivingBase> slayerEntity = new HashSet<>();
     @Getter
     public final Set<EntityLivingBase> slayerMiniEntity = new HashSet<>();
+    private final Set<EntityArmorStand> cachedArmorStands = new HashSet<>();
     private long lastUpdateTime = 0;
+
+    @SubscribeEvent
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.theWorld == null || mc.thePlayer == null) return;
+
+        // Update every 20 ticks
+        if (mc.theWorld.getTotalWorldTime() % 20 != 0) return;
+
+        cachedArmorStands.clear();
+        for (Entity entity : mc.theWorld.getLoadedEntityList()) {
+            if (entity instanceof EntityArmorStand && entity.getName() != null) {
+                cachedArmorStands.add((EntityArmorStand) entity);
+            }
+        }
+    }
 
     @SubscribeEvent
     public void onRenderLast(RenderWorldLastEvent event) {
@@ -74,9 +93,9 @@ public class SlayerMobsDisplay {
         WorldClient world = Minecraft.getMinecraft().theWorld;
         if (world == null) return;
 
-        world.loadedEntityList.forEach(entity -> {
+        cachedArmorStands.forEach(entity -> {
             if (entity == null || entity.getName() == null) return;
-            if (!(entity instanceof EntityArmorStand)) return;
+            if (entity.isDead) return;
 
             // Check for bosses
             for (String name : Constants.SLAYER_BOSSES) {
@@ -108,9 +127,11 @@ public class SlayerMobsDisplay {
     private void showHitbox(MobDisplayTypes type, float partialTicks, String[] namesList, boolean isBoss) {
         Color color = ColorUtils.getColor(Config.feature.slayer.bossSettings.slayerBossColor);
         WorldClient world = Minecraft.getMinecraft().theWorld;
-        world.loadedEntityList.forEach(entity -> {
+        if (world == null) return;
+
+        cachedArmorStands.forEach(entity -> {
             if (entity == null || entity.getName() == null) return;
-            if (!(entity instanceof EntityArmorStand)) return;
+            if (entity.isDead) return;
 
             String[] names = isBoss ? Constants.SLAYER_BOSSES : namesList;
             for (String name : names) {
