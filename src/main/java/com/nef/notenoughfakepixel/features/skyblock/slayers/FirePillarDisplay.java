@@ -8,7 +8,7 @@ import com.nef.notenoughfakepixel.utils.TitleUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.item.EntityArmorStand;
-import net.minecraftforge.client.event.RenderLivingEvent;
+import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @RegisterEvents
@@ -20,7 +20,7 @@ public class FirePillarDisplay {
     private static final long endTime = 0;
 
     @SubscribeEvent
-    public void onRenderLiving(RenderLivingEvent.Pre<EntityLivingBase> event) {
+    public void onRenderLast(RenderWorldLastEvent event) {
         if (!Config.feature.slayer.infernoDemonlord.slayerFirePillarDisplay || mc.theWorld == null) return;
         if (!SkyblockData.getCurrentGamemode().isSkyblock()) return;
         if (!SkyblockData.getCurrentLocation().isCrimson()) return;

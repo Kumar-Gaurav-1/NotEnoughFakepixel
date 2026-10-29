@@ -20,10 +20,12 @@ import net.minecraft.entity.item.EntityArmorStand;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraftforge.client.event.RenderLivingEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 import java.awt.*;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,6 +38,22 @@ public class SlayerMobsDisplay {
     @Getter
     public final Set<EntityLivingBase> slayerMiniEntity = new HashSet<>();
     private long lastUpdateTime = 0;
+
+    private final List<EntityArmorStand> cachedArmorStands = new ArrayList<>();
+
+    @SubscribeEvent
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        Minecraft mc = Minecraft.getMinecraft();
+        cachedArmorStands.clear();
+        if (mc.thePlayer == null || mc.theWorld == null) return;
+
+        for (Entity entity : mc.theWorld.loadedEntityList) {
+            if (entity instanceof EntityArmorStand) {
+                cachedArmorStands.add((EntityArmorStand) entity);
+            }
+        }
+    }
 
     @SubscribeEvent
     public void onRenderLast(RenderWorldLastEvent event) {
@@ -71,12 +89,8 @@ public class SlayerMobsDisplay {
         Color bossColor = ColorUtils.getColor(Config.feature.slayer.bossSettings.slayerBossColor);
         Color minibossColor = ColorUtils.getColor(Config.feature.slayer.minibossSettings.slayerColor);
 
-        WorldClient world = Minecraft.getMinecraft().theWorld;
-        if (world == null) return;
-
-        world.loadedEntityList.forEach(entity -> {
+        cachedArmorStands.forEach(entity -> {
             if (entity == null || entity.getName() == null) return;
-            if (!(entity instanceof EntityArmorStand)) return;
 
             // Check for bosses
             for (String name : Constants.SLAYER_BOSSES) {
@@ -107,10 +121,8 @@ public class SlayerMobsDisplay {
 
     private void showHitbox(MobDisplayTypes type, float partialTicks, String[] namesList, boolean isBoss) {
         Color color = ColorUtils.getColor(Config.feature.slayer.bossSettings.slayerBossColor);
-        WorldClient world = Minecraft.getMinecraft().theWorld;
-        world.loadedEntityList.forEach(entity -> {
+        cachedArmorStands.forEach(entity -> {
             if (entity == null || entity.getName() == null) return;
-            if (!(entity instanceof EntityArmorStand)) return;
 
             String[] names = isBoss ? Constants.SLAYER_BOSSES : namesList;
             for (String name : names) {
