@@ -13,9 +13,11 @@ import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.util.AxisAlignedBB;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -40,6 +42,30 @@ public class PestEsp {
             "Field Mouse"
     );
 
+    private static final List<Entity> pestsCache = new ArrayList<>();
+
+    @SubscribeEvent
+    public void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+
+        // Explicitly clear cache before any early returns to avoid memory leaks
+        // and ghost entity rendering as requested
+        pestsCache.clear();
+
+        if (SkyblockData.getCurrentLocation() != Location.GARDEN) return;
+        if (Config.feature == null || Config.feature.garden == null
+                || !Config.feature.garden.enable || !Config.feature.garden.pestEsp.enabled) return;
+
+        Minecraft mc = Minecraft.getMinecraft();
+        if (mc.thePlayer == null || mc.theWorld == null) return;
+
+        for (Entity entity : mc.theWorld.loadedEntityList) {
+            if (isPest(entity)) {
+                pestsCache.add(entity);
+            }
+        }
+    }
+
     @SubscribeEvent
     public void onRenderWorldLast(RenderWorldLastEvent event) {
         if (SkyblockData.getCurrentLocation() != Location.GARDEN) return;
@@ -54,8 +80,7 @@ public class PestEsp {
         float boxWidth = Math.max(1.0F, Config.feature.garden.pestEsp.boxLineWidth);
         int tracerWidth = Math.max(1, Math.round(Config.feature.garden.pestEsp.tracerLineWidth));
 
-        for (Entity entity : mc.theWorld.loadedEntityList) {
-            if (!isPest(entity)) continue;
+        for (Entity entity : pestsCache) {
 
             double x = entity.lastTickPosX + (entity.posX - entity.lastTickPosX) * event.partialTicks;
             double y = entity.lastTickPosY + (entity.posY - entity.lastTickPosY) * event.partialTicks;
