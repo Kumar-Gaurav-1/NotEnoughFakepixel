@@ -25,6 +25,7 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -41,6 +42,9 @@ public class ChocolateFactory {
     @Getter
     @Setter
     private Pattern pattern = Pattern.compile("Id:\"([^\"]+)\"");
+    private static final Pattern HOPPITY_YOU_FOUND_PATTERN = Pattern.compile("HOPPITY'S HUNT You found");
+    private static final Pattern HOPPITY_EGG_APPEARED_PATTERN = Pattern.compile("HOPPITY'S HUNT A Chocolate .* Egg has appeared");
+    private static final Pattern HOPPITY_ALREADY_COLLECTED_PATTERN = Pattern.compile("You have already collected this Chocolate .* Egg! Try again when it respawns!");
     private final ArrayList<Waypoint> waypoints = new ArrayList<>();
 
     public ChocolateFactory() {}
@@ -49,9 +53,16 @@ public class ChocolateFactory {
     public void onRenderLast(RenderWorldLastEvent event) {
         if (!SkyblockData.getCurrentGamemode().isSkyblock()) return;
         if (!Config.feature.chocolateFactory.chocolateChocolateEggWaypoints) return;
-        checkForEggs();
         drawWaypoints(event.partialTicks);
         drawTags(event.partialTicks);
+    }
+
+    @SubscribeEvent
+    public void onTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) return;
+        if (!SkyblockData.getCurrentGamemode().isSkyblock()) return;
+        if (!Config.feature.chocolateFactory.chocolateChocolateEggWaypoints) return;
+        checkForEggs();
     }
 
     @SubscribeEvent()
@@ -93,9 +104,9 @@ public class ChocolateFactory {
         if (!Config.feature.chocolateFactory.chocolateChocolateEggWaypoints) return;
         if (!SkyblockData.getCurrentGamemode().isSkyblock()) return;
         if (ChatUtils.middleBar.matcher(e.message.getFormattedText()).matches()) return;
-        Matcher matcher = Pattern.compile("HOPPITY'S HUNT You found").matcher(e.message.getUnformattedText());
-        Matcher matcher2 = Pattern.compile("HOPPITY'S HUNT A Chocolate .* Egg has appeared").matcher(e.message.getUnformattedText());
-        Matcher matcher3 = Pattern.compile("You have already collected this Chocolate .* Egg! Try again when it respawns!").matcher(e.message.getUnformattedText());
+        Matcher matcher = HOPPITY_YOU_FOUND_PATTERN.matcher(e.message.getUnformattedText());
+        Matcher matcher2 = HOPPITY_EGG_APPEARED_PATTERN.matcher(e.message.getUnformattedText());
+        Matcher matcher3 = HOPPITY_ALREADY_COLLECTED_PATTERN.matcher(e.message.getUnformattedText());
         int[] playerCoords = new int[]{Minecraft.getMinecraft().thePlayer.getPosition().getX(), Minecraft.getMinecraft().thePlayer.getPosition().getY(), Minecraft.getMinecraft().thePlayer.getPosition().getZ()};
         if (matcher.find()) {
             Waypoint w = Waypoint.getClosestWaypoint(waypoints, playerCoords);
