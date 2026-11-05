@@ -39,6 +39,11 @@ public class BossNotifier {
     private long bladesoulLastKill = -1;
     private long bladesoulReady = -1;
 
+    private static final Pattern BLADESOUL_DOWN_PATTERN = Pattern.compile("BLADESOUL DOWN!");
+    private static final Pattern MAGE_OUTLAW_DOWN_PATTERN = Pattern.compile("MAGE OUTLAW DOWN!");
+    private static final Pattern ASHFANG_DOWN_PATTERN = Pattern.compile("ASHFANG DOWN!");
+    private static final Pattern BARBARIAN_DUKE_X_DOWN_PATTERN = Pattern.compile("BARBARIAN DUKE X DOWN!");
+
     @SubscribeEvent
     public void onTick(TickEvent.ClientTickEvent e) {
         if (Crimson.checkEssentials()) return;
@@ -62,7 +67,7 @@ public class BossNotifier {
         int spawnBossMilliseconds = 125000;
 
         if (Config.feature.crimson.bossNotifiers.crimsonBladesoulNotifier) {
-            Matcher matcher = Pattern.compile("BLADESOUL DOWN!").matcher(e.message.getUnformattedText());
+            Matcher matcher = BLADESOUL_DOWN_PATTERN.matcher(e.message.getUnformattedText());
             if (matcher.find()) {
                 bladesoulLastKill = System.currentTimeMillis();
                 bladesoulReady = bladesoulLastKill + spawnBossMilliseconds;
@@ -72,7 +77,7 @@ public class BossNotifier {
         }
 
         if (Config.feature.crimson.bossNotifiers.crimsonMageOutlawNotifier) {
-            Matcher matcher = Pattern.compile("MAGE OUTLAW DOWN!").matcher(e.message.getUnformattedText());
+            Matcher matcher = MAGE_OUTLAW_DOWN_PATTERN.matcher(e.message.getUnformattedText());
             if (matcher.find()) {
                 mageOutlawLastKill = System.currentTimeMillis();
                 mageOutlawReady = mageOutlawLastKill + spawnBossMilliseconds;
@@ -82,7 +87,7 @@ public class BossNotifier {
         }
 
         if (Config.feature.crimson.bossNotifiers.crimsonAshfangNotifier) {
-            Matcher matcher = Pattern.compile("ASHFANG DOWN!").matcher(e.message.getUnformattedText());
+            Matcher matcher = ASHFANG_DOWN_PATTERN.matcher(e.message.getUnformattedText());
             if (matcher.find()) {
                 ashfangLastKill = System.currentTimeMillis();
                 ashfangReady = ashfangLastKill + spawnBossMilliseconds;
@@ -92,7 +97,7 @@ public class BossNotifier {
         }
 
         if (Config.feature.crimson.bossNotifiers.crimsonBarbarianDukeXNotifier) {
-            Matcher matcher = Pattern.compile("BARBARIAN DUKE X DOWN!").matcher(e.message.getUnformattedText());
+            Matcher matcher = BARBARIAN_DUKE_X_DOWN_PATTERN.matcher(e.message.getUnformattedText());
             if (matcher.find()) {
                 barbarianDukeXLastKill = System.currentTimeMillis();
                 barbarianDukeXReady = barbarianDukeXLastKill + spawnBossMilliseconds;
