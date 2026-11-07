@@ -22,13 +22,13 @@ public class AbilityNotifier {
     private static boolean notifyScheduled = false;
 
     private static final String READY_MESSAGE = EnumChatFormatting.GREEN + "Ready";
-
+    private static final Pattern ABILITY_USED_PATTERN = Pattern.compile("You used your (.+) Pickaxe Ability!");
 
     @SubscribeEvent
     public void onChat(@NotNull ClientChatReceivedEvent e) {
         if (checkEssentials()) return;
 
-        Matcher matcher = Pattern.compile("You used your (.+) Pickaxe Ability!").matcher(e.message.getUnformattedText());
+        Matcher matcher = ABILITY_USED_PATTERN.matcher(e.message.getUnformattedText());
         if (matcher.find()) {
             lastUsed = System.currentTimeMillis();
             canUse = lastUsed + 120000;
