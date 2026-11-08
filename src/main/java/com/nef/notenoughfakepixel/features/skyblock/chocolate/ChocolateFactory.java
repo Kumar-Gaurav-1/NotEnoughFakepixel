@@ -43,6 +43,10 @@ public class ChocolateFactory {
     private Pattern pattern = Pattern.compile("Id:\"([^\"]+)\"");
     private final ArrayList<Waypoint> waypoints = new ArrayList<>();
 
+    private static final Pattern HOPPITY_FOUND_PATTERN = Pattern.compile("HOPPITY'S HUNT You found");
+    private static final Pattern HOPPITY_APPEARED_PATTERN = Pattern.compile("HOPPITY'S HUNT A Chocolate .* Egg has appeared");
+    private static final Pattern HOPPITY_COLLECTED_PATTERN = Pattern.compile("You have already collected this Chocolate .* Egg! Try again when it respawns!");
+
     public ChocolateFactory() {}
 
     @SubscribeEvent
@@ -93,9 +97,9 @@ public class ChocolateFactory {
         if (!Config.feature.chocolateFactory.chocolateChocolateEggWaypoints) return;
         if (!SkyblockData.getCurrentGamemode().isSkyblock()) return;
         if (ChatUtils.middleBar.matcher(e.message.getFormattedText()).matches()) return;
-        Matcher matcher = Pattern.compile("HOPPITY'S HUNT You found").matcher(e.message.getUnformattedText());
-        Matcher matcher2 = Pattern.compile("HOPPITY'S HUNT A Chocolate .* Egg has appeared").matcher(e.message.getUnformattedText());
-        Matcher matcher3 = Pattern.compile("You have already collected this Chocolate .* Egg! Try again when it respawns!").matcher(e.message.getUnformattedText());
+        Matcher matcher = HOPPITY_FOUND_PATTERN.matcher(e.message.getUnformattedText());
+        Matcher matcher2 = HOPPITY_APPEARED_PATTERN.matcher(e.message.getUnformattedText());
+        Matcher matcher3 = HOPPITY_COLLECTED_PATTERN.matcher(e.message.getUnformattedText());
         int[] playerCoords = new int[]{Minecraft.getMinecraft().thePlayer.getPosition().getX(), Minecraft.getMinecraft().thePlayer.getPosition().getY(), Minecraft.getMinecraft().thePlayer.getPosition().getZ()};
         if (matcher.find()) {
             Waypoint w = Waypoint.getClosestWaypoint(waypoints, playerCoords);
