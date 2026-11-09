@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 public class SpiritLeapHandler {
 
     private static final Pattern PLAYER_PATTERN = Pattern.compile("(?:\\[.+?] )?(\\w+)");
+    private static final Pattern COLOR_PATTERN = Pattern.compile("(§[0-9a-fk-or])");
 
     public static class PlayerData {
         public final String playerName;
@@ -181,7 +182,7 @@ public class SpiritLeapHandler {
                         }
                     }
 
-                    Matcher colorMatcher = Pattern.compile("(§[0-9a-fk-or])").matcher(stack.getDisplayName());
+                    Matcher colorMatcher = COLOR_PATTERN.matcher(stack.getDisplayName());
                     String colorCode = colorMatcher.find() ? colorMatcher.group(1) : "§f";
                     playerDataList.add(new PlayerData(name, colorCode, slot.slotNumber, dungeonClass));
                 }
