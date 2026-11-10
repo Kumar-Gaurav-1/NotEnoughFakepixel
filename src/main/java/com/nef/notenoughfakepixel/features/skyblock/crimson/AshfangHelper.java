@@ -51,6 +51,9 @@ public class AshfangHelper {
     private Waypoint waypointGravityOrb;
 
     private static final Pattern ashfangHPPattern = Pattern.compile("([0-9]*[.,]?[0-9]*)([Mk])");
+    private static final Pattern CAN_ONLY_BE_DAMAGED_PATTERN = Pattern.compile("can only be damaged by");
+    private static final Pattern HIT_YOU_FOR_PATTERN = Pattern.compile("hit you for");
+    private static final Pattern BLAZING_SOUL_DEALT_PATTERN = Pattern.compile("The Blazing Soul dealt");
     private float lastHP = 50_000_000;
 
     public AshfangHelper() {
@@ -73,15 +76,15 @@ public class AshfangHelper {
     public void onChat(@NotNull ClientChatReceivedEvent e) {
         if (Crimson.checkEssentials()) return;
         if (Config.feature.crimson.ashfangSettings.crimsonAshfangMuteChat) {
-            Matcher matcher = Pattern.compile("can only be damaged by").matcher(e.message.getUnformattedText());
-            Matcher matcher2 = Pattern.compile("hit you for").matcher(e.message.getUnformattedText());
+            Matcher matcher = CAN_ONLY_BE_DAMAGED_PATTERN.matcher(e.message.getUnformattedText());
+            Matcher matcher2 = HIT_YOU_FOR_PATTERN.matcher(e.message.getUnformattedText());
             if (matcher.find() || matcher2.find()) {
                 e.setCanceled(true);
                 return;
             }
         }
         if (Config.feature.crimson.ashfangSettings.crimsonAshfangMuteChat) {
-            Matcher matcher3 = Pattern.compile("The Blazing Soul dealt").matcher(e.message.getUnformattedText());
+            Matcher matcher3 = BLAZING_SOUL_DEALT_PATTERN.matcher(e.message.getUnformattedText());
             if (matcher3.find()) {
                 int[] position = new int[]{Minecraft.getMinecraft().thePlayer.getPosition().getX(), Minecraft.getMinecraft().thePlayer.getPosition().getY(), Minecraft.getMinecraft().thePlayer.getPosition().getZ()};
                 if (Config.feature.crimson.ashfangSettings.crimsonAshfangMuteChat) e.setCanceled(true);
